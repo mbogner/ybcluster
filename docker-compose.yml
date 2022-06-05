@@ -77,6 +77,8 @@ services:
       - "127.0.0.1:9043:9042"
       - "127.0.0.1:5434:5433"
       - "127.0.0.1:9001:9000"
+      - "127.0.0.1:6380:6379" # yedis
+      - "127.0.0.1:11001:11000" # yedis stats
     environment:
       SERVICE_5433_NAME: ysql
       SERVICE_9042_NAME: ycql
@@ -104,6 +106,8 @@ services:
       - "127.0.0.1:9044:9042"
       - "127.0.0.1:5435:5433"
       - "127.0.0.1:9002:9000"
+      - "127.0.0.1:6381:6379" # yedis
+      - "127.0.0.1:11002:11000" # yedis stats
     environment:
       SERVICE_5433_NAME: ysql
       SERVICE_9042_NAME: ycql
@@ -131,6 +135,8 @@ services:
       - "127.0.0.1:9045:9042"
       - "127.0.0.1:5436:5433"
       - "127.0.0.1:9003:9000"
+      - "127.0.0.1:6382:6379" # yedis
+      - "127.0.0.1:11003:11000" # yedis stats
     environment:
       SERVICE_5433_NAME: ysql
       SERVICE_9042_NAME: ycql
@@ -149,6 +155,7 @@ services:
       - "127.0.0.1:9000:9000" # stats
       - "127.0.0.1:7000:7000" # ybmaster web
       - "127.0.0.1:5433:5433" # sql
+      - "127.0.0.1:6379:6379" # yedis
     volumes:
       - ./docker/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:

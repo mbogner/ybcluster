@@ -20,6 +20,19 @@ also include a load balances 5433 port via haproxy.
 
 Haproxy is configured to serve stats via [http://127.0.0.1:9000](http://127.0.0.1:9000]).
 
+## YEDIS
+
+YugabyteDB also include a Redis compatible server which is mapped via haproxy to 127.0.0.1:6379. By default this doesn't
+require a password but this can be changed by connecting to the server and configuring one like so:
+
+```shell
+redis-cli # using default 127.0.0.1 on default port so no extra args needed
+127.0.0.1:6379> CONFIG SET requirepass "yugabyte"
+# from now on the password yugabyte is required
+```
+
+This uses redis database number 0. Seems like for now other numbers aren't supported yet.
+
 ## Quickstart
 
 This sample only requires docker 19.03.0+.
