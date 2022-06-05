@@ -1,0 +1,173 @@
+version: "3.9"
+services:
+
+  # https://docs.yugabyte.com/preview/reference/configuration/yb-master/
+  ybmaster1:
+    image: yugabytedb/yugabyte:latest
+    volumes:
+      - ybmaster1:/mnt/master
+    command: [ "/home/yugabyte/bin/yb-master",
+               "--fs_data_dirs=/mnt/master",
+               "--master_addresses=ybmaster1:7100,ybmaster2:7100,ybmaster3:7100",
+               "--rpc_bind_addresses=ybmaster1:7100",
+               "--replication_factor=3",
+               "--enable_ysql=true",
+               "--placement_zone=local",
+               "--placement_region=home",
+               "--placement_cloud=docker-compose",
+               "--logtostderr=true"
+    ]
+    environment:
+      SERVICE_7000_NAME: ybmaster
+    networks:
+      yugabyte:
+  ybmaster2:
+    image: yugabytedb/yugabyte:latest
+    volumes:
+      - ybmaster2:/mnt/master
+    command: [ "/home/yugabyte/bin/yb-master",
+               "--fs_data_dirs=/mnt/master",
+               "--master_addresses=ybmaster1:7100,ybmaster2:7100,ybmaster3:7100",
+               "--rpc_bind_addresses=ybmaster2:7100",
+               "--replication_factor=3",
+               "--enable_ysql=true",
+               "--placement_zone=local",
+               "--placement_region=home",
+               "--placement_cloud=docker-compose",
+               "--logtostderr=true"
+    ]
+    environment:
+      SERVICE_7000_NAME: ybmaster
+    networks:
+      yugabyte:
+  ybmaster3:
+    image: yugabytedb/yugabyte:latest
+    volumes:
+      - ybmaster3:/mnt/master
+    command: [ "/home/yugabyte/bin/yb-master",
+               "--fs_data_dirs=/mnt/master",
+               "--master_addresses=ybmaster1:7100,ybmaster2:7100,ybmaster3:7100",
+               "--rpc_bind_addresses=ybmaster3:7100",
+               "--replication_factor=3",
+               "--enable_ysql=true",
+               "--placement_zone=local",
+               "--placement_region=home",
+               "--placement_cloud=docker-compose",
+               "--logtostderr=true"
+    ]
+    environment:
+      SERVICE_7000_NAME: ybmaster
+    networks:
+      yugabyte:
+
+  # https://docs.yugabyte.com/preview/reference/configuration/yb-tserver/
+  ybtserver1:
+    image: yugabytedb/yugabyte:latest
+    volumes:
+      - ybtserver1:/mnt/tserver
+    command: [ "/home/yugabyte/bin/yb-tserver",
+               "--fs_data_dirs=/mnt/tserver",
+               "--enable_ysql=true",
+               "--rpc_bind_addresses=ybtserver1:9100",
+               "--tserver_master_addrs=ybmaster1:7100,ybmaster2:7100,ybmaster3:7100",
+               "--logtostderr=true",
+               "--ysql_enable_auth=true"
+    ]
+    ports:
+      - "127.0.0.1:9043:9042"
+      - "127.0.0.1:5434:5433"
+      - "127.0.0.1:9001:9000"
+    environment:
+      SERVICE_5433_NAME: ysql
+      SERVICE_9042_NAME: ycql
+      SERVICE_6379_NAME: yedis
+      SERVICE_9000_NAME: yb-tserver
+    networks:
+      yugabyte:
+    depends_on:
+      - ybmaster1
+      - ybmaster2
+      - ybmaster3
+  ybtserver2:
+    image: yugabytedb/yugabyte:latest
+    volumes:
+      - ybtserver2:/mnt/tserver
+    command: [ "/home/yugabyte/bin/yb-tserver",
+               "--fs_data_dirs=/mnt/tserver",
+               "--enable_ysql=true",
+               "--rpc_bind_addresses=ybtserver2:9100",
+               "--tserver_master_addrs=ybmaster1:7100,ybmaster2:7100,ybmaster3:7100",
+               "--logtostderr=true",
+               "--ysql_enable_auth=true"
+    ]
+    ports:
+      - "127.0.0.1:9044:9042"
+      - "127.0.0.1:5435:5433"
+      - "127.0.0.1:9002:9000"
+    environment:
+      SERVICE_5433_NAME: ysql
+      SERVICE_9042_NAME: ycql
+      SERVICE_6379_NAME: yedis
+      SERVICE_9000_NAME: yb-tserver
+    networks:
+      yugabyte:
+    depends_on:
+      - ybmaster1
+      - ybmaster2
+      - ybmaster3
+  ybtserver3:
+    image: yugabytedb/yugabyte:latest
+    volumes:
+      - ybtserver3:/mnt/tserver
+    command: [ "/home/yugabyte/bin/yb-tserver",
+               "--fs_data_dirs=/mnt/tserver",
+               "--enable_ysql=true",
+               "--rpc_bind_addresses=ybtserver3:9100",
+               "--tserver_master_addrs=ybmaster1:7100,ybmaster2:7100,ybmaster3:7100",
+               "--logtostderr=true",
+               "--ysql_enable_auth=true"
+    ]
+    ports:
+      - "127.0.0.1:9045:9042"
+      - "127.0.0.1:5436:5433"
+      - "127.0.0.1:9003:9000"
+    environment:
+      SERVICE_5433_NAME: ysql
+      SERVICE_9042_NAME: ycql
+      SERVICE_6379_NAME: yedis
+      SERVICE_9000_NAME: yb-tserver
+    networks:
+      yugabyte:
+    depends_on:
+      - ybmaster1
+      - ybmaster2
+      - ybmaster3
+
+  haproxy: # admin:admin
+    image: haproxy:latest
+    ports:
+      - "127.0.0.1:9000:9000" # stats
+      - "127.0.0.1:7000:7000" # ybmaster web
+      - "127.0.0.1:5433:5433" # sql
+    volumes:
+      - ./docker/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      yugabyte:
+    links:
+      - ybmaster1
+      - ybmaster2
+      - ybmaster3
+      - ybtserver1
+      - ybtserver2
+      - ybtserver3
+
+volumes:
+  ybmaster1:
+  ybmaster2:
+  ybmaster3:
+  ybtserver1:
+  ybtserver2:
+  ybtserver3:
+
+networks:
+  yugabyte:
